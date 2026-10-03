@@ -1,0 +1,6 @@
+# The build workflow asks for the harness close routine when it finishes. Prose to prose: the git hooks remain the guarantee.
+[workflow]
+persistent_facts = ["file:{project-root}/AGENTS.md"]
+on_complete = """
+Ask to run the harness-close skill (.agents/skills/harness-close/SKILL.md). The story is not done until it passes: self-review gate, tests after the last edit, map, NEXT-STEPS, ADRs, memory, session log, transcript, lint, commit trailers.
+"""

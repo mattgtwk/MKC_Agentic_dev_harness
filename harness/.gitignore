@@ -1,0 +1,20 @@
+# secrets and machine-specific values never enter the repository
+.env
+.env.*
+!.env.example
+# vendor skill folders are junctions to .agents/skills; recreate with: python scripts/harness_lint.py --doctor --relink
+.claude/skills/
+.agent/skills/
+# BMAD personal layers (team files are committed)
+_bmad/config.user.toml
+_bmad/custom/*.user.toml
+# harness session state (transcript sync marker)
+.harness/
+# build, test and coverage output
+coverage.xml
+htmlcov/
+.coverage
+__pycache__/
+node_modules/
+# caveman-compress keeps its backups out of tree; never commit one
+*.original.md

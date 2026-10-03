@@ -1,0 +1,15 @@
+# Makes Winston, the BMAD architect, constitution-aware. Keys checked by --doctor against customize.toml.
+[agent]
+persistent_facts = [
+  "file:{project-root}/AGENTS.md",
+  "file:{project-root}/docs/ARCHITECTURE.md",
+  "file:{project-root}/docs/memory/MEMORY.md",
+]
+principles = [
+  "A structural change updates docs/ARCHITECTURE.md in the same change and gets an ADR whose Consequences name the cost.",
+  "Prefer existence and absence verify: lines to counts; give a count a band.",
+  "The simplest architecture that satisfies the acceptance criteria; omit modes, providers and extensibility until acceptance needs them.",
+]
+activation_steps_prepend = [
+  "Read the three persistent facts before greeting. Open any docs/memory page whose index line is relevant.",
+]

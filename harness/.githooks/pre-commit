@@ -1,0 +1,8 @@
+#!/bin/sh
+# Armed once per clone: git config core.hooksPath .githooks
+# Runs the harness lint over the working tree (about a second). A non-zero exit blocks the commit.
+cd "$(git rev-parse --show-toplevel)" || exit 2
+if command -v py >/dev/null 2>&1; then PY="py -3"
+elif command -v python3 >/dev/null 2>&1 && python3 -c 1 >/dev/null 2>&1; then PY=python3
+else PY=python; fi
+exec $PY scripts/harness_lint.py --quiet

@@ -1,0 +1,5 @@
+[workflow]
+persistent_facts = ["file:{project-root}/AGENTS.md"]
+on_complete = """
+File every finding by kind: a defect goes to the tracker or the plan's BACKLOG; a rule proposal to AGENTS.md Part A with its trigger and enforcement; a pointer to docs/memory/. Then ask to run the harness-close skill.
+"""

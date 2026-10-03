@@ -1,0 +1,6 @@
+[workflow]
+persistent_facts = ["file:{project-root}/AGENTS.md"]
+on_complete = """
+Wave-close promotion: list every lesson, give each a kind (rule, repo fact, invariant, procedure, decision, pointer) and an owner file, change the owner file, and tick only when the file changed.
+Walk .agents/skills/: a skill unused for a cycle is fixed or deleted; a drifted verify: claim is a defect. Record the outcome in the session log.
+"""

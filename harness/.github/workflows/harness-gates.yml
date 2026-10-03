@@ -1,0 +1,23 @@
+# The gate that makes the harness binding for every agent and every human: lint, tests, coverage ratchet.
+# Make it required on main (bootstrap step 6) or it is advice.
+name: harness-gates
+on:
+  push:
+  pull_request:
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Harness lint
+        run: python scripts/harness_lint.py
+      - name: Tests
+        # Fill in bootstrap step 6. Must write a Cobertura XML at the path named in coverage_baseline.json.
+        run: <TEST_COMMAND>
+      - name: Coverage ratchet
+        run: python scripts/harness_lint.py --ratchet

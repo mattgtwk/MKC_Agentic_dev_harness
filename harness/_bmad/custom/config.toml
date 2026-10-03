@@ -1,0 +1,4 @@
+# Team-level BMAD configuration overrides (committed). Personal values go in config.user.toml (gitignored).
+# Installer-owned _bmad/config.toml is regenerated on every install; override here instead.
+[core]
+output_folder = "{project-root}/_bmad-output"

@@ -1,0 +1,18 @@
+# Makes Amelia, the BMAD developer, constitution-aware. Keys checked by --doctor against customize.toml.
+[agent]
+persistent_facts = [
+  "file:{project-root}/AGENTS.md",
+  "file:{project-root}/docs/ARCHITECTURE.md",
+  "file:{project-root}/docs/memory/MEMORY.md",
+]
+principles = [
+  "A bugfix is red-first: the regression test fails before the fix and passes after; both lines go in the commit body.",
+  "A test is done when it has been watched going red with the code broken, then reverted.",
+  "Investigate first: separate observed from assumed; no product code until one mechanism explains the evidence.",
+  "Never fix a defect outside the declared Surface; write a BACKLOG line in the plan instead.",
+  "Verify and stop: the smallest proof set, then no enhancements after acceptance passes.",
+  "Ask to run the harness-close skill before declaring any story done.",
+]
+activation_steps_prepend = [
+  "Read the three persistent facts before greeting. Open any docs/memory page whose index line is relevant.",
+]

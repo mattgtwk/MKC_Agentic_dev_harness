@@ -1,0 +1,10 @@
+#!/bin/sh
+# Armed once per clone: git config core.hooksPath .githooks
+# Git hands the refs being pushed on stdin; both checks read that protocol. Seconds, no test suite: tests run in CI.
+cd "$(git rev-parse --show-toplevel)" || exit 2
+if command -v py >/dev/null 2>&1; then PY="py -3"
+elif command -v python3 >/dev/null 2>&1 && python3 -c 1 >/dev/null 2>&1; then PY=python3
+else PY=python; fi
+IN=$(cat)
+printf '%s\n' "$IN" | $PY scripts/harness_lint.py --quiet --prepush || exit 2
+printf '%s\n' "$IN" | $PY scripts/prepush_check.py --git-hook

@@ -1,0 +1,5 @@
+[workflow]
+persistent_facts = ["file:{project-root}/AGENTS.md", "file:{project-root}/docs/ARCHITECTURE.md"]
+on_complete = """
+Write one ADR per decision to docs/adr/ from 0000-template.md, add its register row in docs/adr/README.md, and update docs/ARCHITECTURE.md including its last_reviewed date.
+"""
