@@ -536,9 +536,40 @@ def range_checks(root: Path, rep: Report, tip: str, label: str) -> None:
         (rep.err if missing else rep.ok)("trailers", f"{label}: " + (f"missing trailer(s) {missing} in the pushed commits" if missing else "Review: and Tests: trailers present"))
         touched = any(f.startswith("docs/sessions/") for f in changed)
         (rep.ok if touched else rep.err)("session-log", f"{label}: " + ("session log in range" if touched else "source changed but docs/sessions/ untouched (write the session log; harness-close does)"))
+        check_promotions(root, rep, tip, label, changed)
     else:
         rep.ok("trailers", f"{label}: docs-only range")
         rep.ok("session-log", f"{label}: docs-only range")
+        rep.ok("promotions", f"{label}: docs-only range")
+
+
+PROMO_RE = re.compile(r"^- (?:none: .+|[a-z][a-z /-]* -> (\S+))$")
+
+
+def check_promotions(root: Path, rep: Report, tip: str, label: str, changed: list[str]) -> None:
+    """Every session log in the range has '## Lessons promoted'; each named owner file is in the range."""
+    logs = [f for f in changed if re.match(r"^docs/sessions/session_\d{10}\.md$", f)]
+    if not logs:
+        rep.err("promotions", f"{label}: no docs/sessions/session_<YYMMDDhhmm>.md in the range to carry 'Lessons promoted'")
+        return
+    problems, sections = [], 0
+    for log in logs:
+        text = git(root, "show", f"{tip}:{log}")
+        m = re.search(r"^## Lessons promoted\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
+        if not m:
+            problems.append(f"{log}: no '## Lessons promoted' section")
+            continue
+        sections += 1
+        bullets = [ln.strip() for ln in m.group(1).splitlines() if ln.strip().startswith("- ")]
+        if not bullets:
+            problems.append(f"{log}: 'Lessons promoted' is empty (write '- none: <reason>' if nothing was learned)")
+        for b in bullets:
+            pm = PROMO_RE.match(b)
+            if not pm:
+                problems.append(f"{log}: line must be '- <kind> -> <owner path>' or '- none: <reason>': {b[:60]}")
+            elif pm.group(1) and pm.group(1) not in changed:
+                problems.append(f"{log}: names {pm.group(1)} as the owner but the push does not change it (naming the owner is not promoting to it)")
+    (rep.err if problems else rep.ok)("promotions", f"{label}: " + ("; ".join(problems[:4]) if problems else f"{sections} session log(s) list their promotions and every named owner file is in the change"))
 
 
 def prepush(root: Path, stdin_text: str, today: dt.date | None = None) -> Report:
@@ -556,45 +587,104 @@ def prepush(root: Path, stdin_text: str, today: dt.date | None = None) -> Report
 
 
 # ---------------------------------------------------------------- --ratchet
+def cobertura_lines(xml_text: str) -> dict[str, dict[int, int]]:
+    """filename -> {line number: hits} from a Cobertura report (only executable lines appear)."""
+    out: dict[str, dict[int, int]] = {}
+    for cls in re.finditer(r'<class\b[^>]*\bfilename="([^"]+)"[^>]*>(.*?)</class>', xml_text, re.S):
+        fname = cls.group(1).replace("\\", "/")
+        hits = out.setdefault(fname, {})
+        for ln in re.finditer(r'<line\b[^>]*\bnumber="(\d+)"[^>]*\bhits="(\d+)"', cls.group(2)):
+            hits[int(ln.group(1))] = max(hits.get(int(ln.group(1)), 0), int(ln.group(2)))
+    return out
+
+
+def added_lines(root: Path, base: str, path: str) -> set[int]:
+    nums: set[int] = set()
+    for m in re.finditer(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@", git(root, "diff", "-U0", f"{base}...HEAD", "--", path), re.M):
+        start, count = int(m.group(1)), int(m.group(2) or 1)
+        nums.update(range(start, start + count))
+    return nums
+
+
+def diff_coverage(root: Path, rep: Report, xml_text: str, min_pct: float) -> None:
+    base = git(root, "merge-base", BASE, "HEAD").strip()
+    if not base:
+        rep.warn("diff-coverage", f"no merge-base with {BASE}; the check did not run")
+        return
+    report = cobertura_lines(xml_text)
+    changed = [f for f in git(root, "diff", "--name-only", f"{base}...HEAD").splitlines() if f]
+    covered = total = 0
+    missed: list[str] = []
+    for path in changed:
+        hits = next((h for f, h in report.items() if f == path or path.endswith("/" + f) or f.endswith("/" + path)), None)
+        if hits is None:
+            continue  # not a measured file (docs, config, deleted)
+        for n in added_lines(root, base, path):
+            if n in hits:
+                total += 1
+                if hits[n] > 0:
+                    covered += 1
+                else:
+                    missed.append(f"{path}:{n}")
+    if total == 0:
+        rep.ok("diff-coverage", "no added executable lines in the measured files")
+        return
+    pct = round(covered * 100 / total, 1)
+    msg = f"{covered}/{total} added executable lines covered ({pct}%; minimum {min_pct}%)"
+    if pct + 1e-9 < min_pct:
+        rep.err("diff-coverage", msg + "; uncovered: " + ", ".join(missed[:8]))
+    else:
+        rep.ok("diff-coverage", msg)
+
+
 def ratchet(root: Path, coverage_xml: str, update: bool, force: bool) -> Report:
     rep = Report()
     bpath = root / "coverage_baseline.json"
     try:
-        baseline = json.loads(read(bpath)) if bpath.is_file() else {"line_pct": None}
+        baseline = json.loads(read(bpath)) if bpath.is_file() else {}
     except ValueError:
-        baseline = {"line_pct": None}
+        baseline = {}
     xml = root / (coverage_xml or baseline.get("coverage_xml") or "coverage.xml")
     if not xml.is_file():
         rep.warn("ratchet", f"{xml.name} not found; the check did not run")
         return rep
-    m = re.search(r'line-rate="([0-9.]+)"', read(xml))
-    if not m:
-        rep.warn("ratchet", f"{xml.name} has no line-rate attribute (Cobertura expected); the check did not run")
-        return rep
-    current = round(float(m.group(1)) * 100, 2)
-    floors = [baseline.get("line_pct")]
+    text = read(xml)
+    main_floors: dict = {}
     main_json = git(root, "show", f"{BASE}:coverage_baseline.json")
     if main_json:
         try:
-            floors.append(json.loads(main_json).get("line_pct"))
+            main_floors = json.loads(main_json)
         except ValueError:
-            pass
-    floor = max((f for f in floors if isinstance(f, (int, float))), default=None)
-    if update:
-        if floor is None or current > floor or force:
-            baseline["line_pct"] = current
-            baseline.setdefault("coverage_xml", xml.relative_to(root).as_posix())
-            bpath.write_text(json.dumps(baseline, indent=2) + "\n", encoding="utf-8", newline="\n")
-            rep.ok("ratchet", f"baseline set to {current}% (was {floor})")
+            main_floors = {}
+    changed = False
+    for metric, attr in (("line_pct", "line-rate"), ("branch_pct", "branch-rate")):
+        name = metric.split("_")[0]
+        m = re.search(rf'{attr}="([0-9.]+)"', text)
+        if not m:
+            rep.warn("ratchet", f"{xml.name} has no {attr} attribute (Cobertura expected); the {name} check did not run")
+            continue
+        current = round(float(m.group(1)) * 100, 2)
+        floor = max((f for f in (baseline.get(metric), main_floors.get(metric)) if isinstance(f, (int, float))), default=None)
+        if update:
+            if floor is None or current > floor or force:
+                baseline[metric] = current
+                changed = True
+                rep.ok("ratchet", f"{name} floor set to {current}% (was {floor})")
+            else:
+                rep.ok("ratchet", f"{name} floor {floor}% kept; current {current}% is not higher (--force lowers it, with approval)")
+        elif floor is None:
+            rep.warn("ratchet", f"{name} coverage {current}%; no floor yet (run --ratchet --update-baseline after the first green run)")
+        elif current + 1e-9 < floor:
+            rep.err("ratchet", f"{name} coverage {current}% fell below the floor {floor}% (floors only rise)")
         else:
-            rep.ok("ratchet", f"baseline {floor}% kept; current {current}% is not higher (use --force to lower, with approval)")
+            rep.ok("ratchet", f"{name} coverage {current}% >= floor {floor}%")
+    if update:
+        if changed:
+            baseline.setdefault("coverage_xml", xml.relative_to(root).as_posix())
+            baseline.setdefault("diff_min_pct", 90)
+            bpath.write_text(json.dumps(baseline, indent=2) + "\n", encoding="utf-8", newline="\n")
         return rep
-    if floor is None:
-        rep.warn("ratchet", f"line coverage {current}%; no baseline yet (run --ratchet --update-baseline after the first green run)")
-    elif current + 1e-9 < floor:
-        rep.err("ratchet", f"line coverage {current}% fell below the floor {floor}% (floors only rise)")
-    else:
-        rep.ok("ratchet", f"line coverage {current}% >= floor {floor}%")
+    diff_coverage(root, rep, text, float(baseline.get("diff_min_pct", 90)))
     return rep
 
 
@@ -785,14 +875,18 @@ def selftest() -> int:
         case("override with unknown key -> doctor error", bool(override_errors(root)))
 
         make_fixture(root, today)
-        (root / "coverage.xml").write_text('<coverage line-rate="0.5"/>', encoding="utf-8")
+        (root / "coverage.xml").write_text('<coverage line-rate="0.5" branch-rate="0.4"/>', encoding="utf-8")
         case("ratchet: no baseline -> WARN", "WARN" in ratchet(root, "", False, False).levels("ratchet"))
-        (root / "coverage_baseline.json").write_text('{"line_pct": 60.0}', encoding="utf-8")
-        case("ratchet: below floor -> ERROR", "ERROR" in ratchet(root, "", False, False).levels("ratchet"))
-        (root / "coverage_baseline.json").write_text('{"line_pct": 40.0}', encoding="utf-8")
-        case("ratchet: above floor -> PASS", "PASS" in ratchet(root, "", False, False).levels("ratchet"))
+        (root / "coverage_baseline.json").write_text('{"line_pct": 60.0, "branch_pct": 30.0}', encoding="utf-8")
+        case("ratchet: line below floor -> ERROR", "ERROR" in ratchet(root, "", False, False).levels("ratchet"))
+        (root / "coverage_baseline.json").write_text('{"line_pct": 40.0, "branch_pct": 50.0}', encoding="utf-8")
+        case("ratchet: branch below floor -> ERROR", any("branch coverage" in r["message"] for r in ratchet(root, "", False, False).errors))
+        (root / "coverage_baseline.json").write_text('{"line_pct": 40.0, "branch_pct": 30.0}', encoding="utf-8")
+        case("ratchet: both above floor -> no ERROR", not ratchet(root, "", False, False).errors)
         ratchet(root, "", True, False)
-        case("ratchet: --update-baseline raises floor to 50.0", json.loads(read(root / "coverage_baseline.json"))["line_pct"] == 50.0)
+        b = json.loads(read(root / "coverage_baseline.json"))
+        case("ratchet: --update-baseline raises floors to 50.0 / 40.0", (b["line_pct"], b["branch_pct"]) == (50.0, 40.0))
+        case("ratchet: --update-baseline keeps diff_min_pct", b.get("diff_min_pct") == 90)
 
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -820,12 +914,40 @@ def selftest() -> int:
         case("prepush: no session log -> session-log ERROR", "ERROR" in r.levels("session-log"))
         run("git", "checkout", "-q", "-b", "good", "main")
         (root / "src").mkdir(exist_ok=True)
-        (root / "src/b.py").write_text("y = 1\n", encoding="utf-8")
+        (root / "src/b.py").write_text("y = 1\nz = 2\n", encoding="utf-8")
         (root / "docs/sessions").mkdir(parents=True, exist_ok=True)
-        (root / "docs/sessions/session_2610031200.md").write_text("# session\n", encoding="utf-8")
+        (root / "docs/sessions/session_2610031200.md").write_text("# session\n\n## Lessons promoted\n\n- none: trivial change\n\n## Next steps\n", encoding="utf-8")
         commit("feat: good\n\nSurface: src/b.py\nTests: pytest -> 1 passed\nReview: clean after 1 round")
         r = prepush(root, "", today)
-        case("prepush: declared, logged, trailed -> no range errors", not [e for e in r.errors if e["check"] in ("surface", "one-kind", "trailers", "session-log", "prepush-base")])
+        case("prepush: declared, logged, trailed, promotions listed -> no range errors", not [e for e in r.errors if e["check"] in ("surface", "one-kind", "trailers", "session-log", "promotions", "prepush-base")])
+        cob = ('<coverage line-rate="0.5" branch-rate="0.5"><packages><package><classes>'
+               '<class name="b" filename="src/b.py"><lines><line number="1" hits="{h1}"/><line number="2" hits="{h2}"/></lines></class>'
+               '</classes></package></packages></coverage>')
+        (root / "coverage.xml").write_text(cob.format(h1=1, h2=0), encoding="utf-8")
+        case("diff-coverage: 1 of 2 added lines covered -> ERROR below 90%", "ERROR" in ratchet(root, "", False, False).levels("diff-coverage"))
+        (root / "coverage.xml").write_text(cob.format(h1=1, h2=1), encoding="utf-8")
+        case("diff-coverage: all added lines covered -> PASS", "PASS" in ratchet(root, "", False, False).levels("diff-coverage"))
+        (root / "coverage_baseline.json").write_text('{"line_pct": null, "branch_pct": null, "diff_min_pct": 50}', encoding="utf-8")
+        (root / "coverage.xml").write_text(cob.format(h1=1, h2=0), encoding="utf-8")
+        case("diff-coverage: honours diff_min_pct from the baseline file", "PASS" in ratchet(root, "", False, False).levels("diff-coverage"))
+        (root / "coverage.xml").unlink()
+        (root / "coverage_baseline.json").unlink()
+        run("git", "checkout", "-q", "-b", "nopromo", "main")
+        (root / "src").mkdir(exist_ok=True)
+        (root / "src/n.py").write_text("n = 1\n", encoding="utf-8")
+        (root / "docs/sessions").mkdir(parents=True, exist_ok=True)
+        (root / "docs/sessions/session_2610031300.md").write_text("# session\n\n## Summary\n", encoding="utf-8")
+        commit("feat: n\n\nSurface: src/n.py\nTests: pytest -> ok\nReview: clean")
+        case("prepush: session log without 'Lessons promoted' -> promotions ERROR", "ERROR" in prepush(root, "", today).levels("promotions"))
+        (root / "docs/sessions/session_2610031300.md").write_text("# session\n\n## Lessons promoted\n\n- procedure -> .agents/skills/new-skill/SKILL.md\n", encoding="utf-8")
+        commit("docs: name an owner without changing it")
+        r = prepush(root, "", today)
+        case("prepush: owner named but not in the change -> promotions ERROR", any("naming the owner" in e["message"] for e in r.errors))
+        (root / ".agents/skills/new-skill").mkdir(parents=True)
+        (root / ".agents/skills/new-skill/SKILL.md").write_text("---\nname: new-skill\ndescription: d\n---\n", encoding="utf-8")
+        commit("feat: the owner file changes too")
+        case("prepush: owner file in the change -> promotions PASS", "PASS" in prepush(root, "", today).levels("promotions"))
+        run("git", "checkout", "-q", "good")
         (root / "scripts").mkdir(exist_ok=True)
         (root / "scripts/tool.py").write_text("z = 1\n", encoding="utf-8")
         commit("chore: tooling rides along")

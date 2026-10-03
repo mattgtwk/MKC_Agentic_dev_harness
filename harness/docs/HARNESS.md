@@ -21,8 +21,8 @@ One page. The rules are in `AGENTS.md` Part A; this explains the shape so a newc
 
 ## Enforcement, in layers
 
-1. **Git hooks** (`.githooks/`, armed by `git config core.hooksPath .githooks`): pre-commit runs the lint in under a second; pre-push adds the commit-range checks and the declared-surface guard. Both are shell plus stdlib Python, so every agent and every human gets the same gate.
-2. **CI** (`.github/workflows/harness-gates.yml`): the same lint, the test suite, and the coverage ratchet, on every push and pull request. Branch protection on `main` makes it binding; that is the one manual step in bootstrap.
+1. **Git hooks** (`.githooks/`, armed by `git config core.hooksPath .githooks`): pre-commit runs the lint in under a second; pre-push adds the commit-range checks (declared Surface, one kind, `Tests:` and `Review:` trailers, a session log with its `## Lessons promoted` list whose owner files are in the change) and the declared-surface guard. Both are shell plus stdlib Python, so every agent and every human gets the same gate.
+2. **CI** (`.github/workflows/harness-gates.yml`): the same lint, the test suite, and the coverage ratchet (line and branch floors that only rise, plus a minimum on the executable lines a change adds), on every push and pull request. Branch protection on `main` makes it binding; that is the one manual step in bootstrap.
 3. **Skills**: the open/plan/close procedures. They make the loop fast and legible; they are not the guarantee.
 4. **Vendor hooks**: none shipped. If you add a Claude Stop hook that runs the lint, it is a convenience over the same script.
 

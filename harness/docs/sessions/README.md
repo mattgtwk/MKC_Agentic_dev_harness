@@ -15,8 +15,13 @@ Written by `harness-close` step 8, in full sentences, from this shape:
 ## Decisions, and where each was recorded
 ## Commands and tests run (command -> summary line)
 ## Gates (lint, prepush, ratchet: outcome)
+## Lessons promoted
+- <kind> -> <owner path>        kind: rule | repo fact | invariant | procedure | decision | pointer
+- none: <reason>                when nothing outlives the session
 ## Next steps
 ```
+
+The push gate (`promotions`) requires the `## Lessons promoted` section in every session log it pushes and refuses a named owner path that the push does not change.
 
 ## Raw transcripts: `docs/sessions/raw/<host>/<YYMMDDhhmm>-<file>`
 

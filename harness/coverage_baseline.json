@@ -1,4 +1,6 @@
 {
   "line_pct": null,
+  "branch_pct": null,
+  "diff_min_pct": 90,
   "coverage_xml": "coverage.xml"
 }

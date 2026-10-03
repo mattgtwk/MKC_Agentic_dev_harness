@@ -1,6 +1,6 @@
 # AGENTS.md
 
-harness-constitution v1.0.0 (kit: github.com/mattgtwk/MKC_Agentic_dev_harness). Every coding agent and every person working in this repository follows this file. Part A is the constitution and is project-agnostic; Part B is this repository. Part B may add detail and may not contradict Part A. `CLAUDE.md` and `GEMINI.md` only import this file.
+harness-constitution v1.1.0 (kit: github.com/mattgtwk/MKC_Agentic_dev_harness). Every coding agent and every person working in this repository follows this file. Part A is the constitution and is project-agnostic; Part B is this repository. Part B may add detail and may not contradict Part A. `CLAUDE.md` and `GEMINI.md` only import this file.
 
 A rule enters Part A only if it names (a) the value it adds, (b) how it is enforced, and (c) what it displaces. A rule that cannot name an enforcement says "Enforced by: convention" and means it. This file stays under 24 KB (`agents-size`); the always-loaded set (this file, the two adapters, `docs/memory/MEMORY.md`) stays under 32 KB (`context-budget`).
 
@@ -53,7 +53,7 @@ A rule enters Part A only if it names (a) the value it adds, (b) how it is enfor
 - **Native execution, mostly Windows.** Scripts are ASCII; every native call asserts its exit code; paths with spaces are quoted; repositories live under a short root; hooks are LF. Each agent uses its own shell tool and says which. Enforced by: `.gitattributes`; `--doctor` (hook line endings); convention.
 - **Definition of tested.** A behaviour is tested when a test names it, asserts it, and has been seen to fail when the behaviour is broken. Coverage does not define tested; the witnessed red does. Enforced by: convention; `Tests:` trailer presence at push.
 - **Every bugfix ships a regression test written first.** Red captured before the fix, green after, both named in the commit body. Enforced by: `harness-plan` (names the test); convention.
-- **Coverage is a ratchet, never a target.** The floor in `coverage_baseline.json` only rises; new and changed lines are covered. Lowering it needs `--force` and a stated approval. Enforced by: `--ratchet` in CI.
+- **Coverage is a ratchet, never a target.** The line and branch floors in `coverage_baseline.json` only rise, and at least `diff_min_pct` of the executable lines a change adds are covered. Lowering a floor needs `--force` and a stated approval. Enforced by: `ratchet` and `diff-coverage` under `--ratchet` in CI; `harness-close` step 2.
 - **A suite you did not run is not green.** Test output is recorded in the session log and summarised in the `Tests:` trailer. Enforced by: `trailers` (presence); convention.
 - **Token discipline.** This file, the adapters and the memory index stay under 32 KB; a `SKILL.md` stays under 15 KB with detail in `references/`; a memory page under 800 bytes. `caveman` voice is on by default: answer first, one idea per sentence, nothing dropped that changes meaning; full sentences for security warnings, irreversible actions, ambiguous step order and anything persisted (code, commits, docs, tickets). `caveman-compress` may run on prose files such as `NEXT-STEPS.md` and memory pages, never on this file. Enforced by: `context-budget`, `skills-frontmatter`, `memory-schema`; voice by convention.
 
@@ -69,8 +69,8 @@ A rule enters Part A only if it names (a) the value it adds, (b) how it is enfor
 | `memory-schema`, `memory-authority`, `memory-index` | Fact/Why/Authority, 800 B, Authority resolves, index matches (`--rebuild-index`) |
 | `adr-register`, `architecture-map`, `claims` | one register row per ADR; one map with `last_reviewed` (warn after 90 days); every `verify:` claim holds |
 | `secrets-scan` | no token-shaped literals in docs or transcripts; no tracked `.env` |
-| `surface`, `one-kind`, `trailers`, `session-log` (`--prepush`) | `Surface:` in the first commit; product and tooling not mixed; `Review:` and `Tests:` present; `docs/sessions/` touched when source changed |
-| `ratchet` (`--ratchet`) | the coverage floor never falls |
+| `surface`, `one-kind`, `trailers`, `session-log`, `promotions` (`--prepush`) | `Surface:` in the first commit; product and tooling not mixed; `Review:` and `Tests:` present; `docs/sessions/` touched when source changed; every session log lists its promotions and each named owner file is in the change |
+| `ratchet`, `diff-coverage` (`--ratchet`) | line and branch floors never fall; added executable lines meet `diff_min_pct` |
 | `doctor` | junctions, hooks, python, node, uv, BMAD overrides, pinned skills |
 
 - **Claims carry their check.** A factual statement about this codebase in this file, the map or a skill carries an HTML comment on the next line beginning `verify:` with one of `exists <path>`, `absent '<regex>' in <dir>`, `present '<regex>' in <dir>` or `count '<regex>' in <dir> between A and B`. Prefer existence and absence to counts; give counts a band. A claim that cannot be checked is rewritten as an observation or deleted. Enforced by: `claims`.
@@ -79,12 +79,12 @@ A rule enters Part A only if it names (a) the value it adds, (b) how it is enfor
 
 - **A skill is created only when the procedure was needed twice, took more than thirty minutes to work out, and is not obvious from the docs.** Below that bar it is a note in an existing skill or a memory pointer. Imported skills enter through the same gate and are pinned. Enforced by: convention; `skills-lock`.
 - **Memory is a cache, not an archive.** A page is `**Fact:**`, `**Why:**`, `**Authority:**` under 800 bytes; the Authority is a `path`, a `path#heading` or an `ADR-NNNN` and must resolve. Never restate a rule in memory: memory is read first, so a stale copy beats the truth. Revise in place; a hand-edited page carries `reviewed: true`. Vendor auto-memory is not a store of record: anything durable it holds is promoted into `docs/memory/` at close. Enforced by: `memory-schema`, `memory-authority`, `memory-index`.
-- **Promote every lesson to its owner before the work closes.** Each lesson gets a kind and an owner file; the item is ticked only when that file changed. Naming the owner is not promoting to it. Enforced by: `harness-close` step 6.
+- **Promote every lesson to its owner before the work closes.** Each lesson gets a kind and an owner file, listed in the session log under `## Lessons promoted` as `- <kind> -> <owner path>` (or `- none: <reason>`); the item counts only when that file is in the same change. Naming the owner is not promoting to it. A procedure learned twice becomes a skill here. Enforced by: `promotions` at push; `harness-close` step 6.
 - **Prune on schedule.** At each retrospective a skill unused for a cycle is fixed or deleted and a drifted claim is a defect. Enforced by: the `bmad-retrospective` override in `_bmad/custom/`; convention.
 
 ### 8. Close routine and the conversation record
 
-- **A session ends only when** the self-review gate is written out; tests ran after the last edit and their output is recorded; `docs/ARCHITECTURE.md` matches reality; `NEXT-STEPS.md` is rewritten for the next session; decisions are in ADRs; lessons are promoted; memory pages pass and the index is rebuilt; the session log is written; transcripts are copied; the lint is clean; the plan has its Status header; the commit carries `Surface:`, `Tests:` and `Review:`. Enforced by: `harness-close`; `--prepush`.
+- **A session ends only when** the self-review gate is written out; tests ran after the last edit, their output is recorded and the coverage ratchet was run over the report; `docs/ARCHITECTURE.md` matches reality; `NEXT-STEPS.md` is rewritten for the next session; decisions are in ADRs; lessons are promoted; memory pages pass and the index is rebuilt; the session log is written; transcripts are copied; the lint is clean; the plan has its Status header; the commit carries `Surface:`, `Tests:` and `Review:`. Enforced by: `harness-close`; `--prepush`.
 - **The conversation record lives in this repository.** Every session leaves `docs/sessions/session_<YYMMDDhhmm>.md` and, where the host exposes it, its raw transcript under `docs/sessions/raw/<host>/` via `python scripts/save_transcript.py`. Nothing of record lives only in a vendor's home folder (Claude, Codex, Gemini, Antigravity). Enforced by: `session-log` at push; `harness-close` step 9.
 
 ### 9. Access boundaries
