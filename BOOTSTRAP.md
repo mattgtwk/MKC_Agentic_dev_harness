@@ -82,9 +82,22 @@ npx skills add DietrichGebert/ponytail -a codex -s ponytail -y
 npx skills add mattpocock/skills -a codex -s grill-me -s grilling -y
 ```
 
-Then invoke the `bmad` skill and ask it to run setup (it runs its own scripts with `uv run`; answer its configuration questions; if it offers to update skills to a newer version, decline during bootstrap), then ask it for status. Open `.agents/skills/bmad-agent-pm/customize.toml` and confirm the field names used by `_bmad/custom/*.toml` exist there (`persistent_facts`, `principles`, `activation_steps_prepend`; for workflows `on_complete`, a string). `python scripts/harness_lint.py --doctor` checks the same thing. If a name differs, edit the override to the installed name and say so in the session log.
+Keep the quotes around `'*'`: an unquoted wildcard is glob-expanded by the shell and the installer silently installs nothing. Then run BMAD's setup non-interactively (it is the `bmad` skill's own script; it asks nothing when the installed modules have no pending questions, and it never touches `_bmad/custom/`):
 
-Check: `git status --porcelain` lists only `_bmad/`, `_bmad-output/`, `.agents/skills/*` and `skills-lock.json` as new. Activate the PM persona (type `bmad-agent-pm`); it reads AGENTS.md, the map and the memory index before greeting.
+```
+uv run .agents/skills/bmad/scripts/setup.py --project-root . --skill .agents/skills/bmad --root .agents/skills
+uv run .agents/skills/bmad/scripts/setup.py --project-root . --skill .agents/skills/bmad --root .agents/skills --status
+```
+
+If the status JSON lists `pending_questions`, answer them by invoking the `bmad` skill and asking it to run setup; decline any offer to update skills during bootstrap. Then `python scripts/harness_lint.py --doctor` confirms every key in `_bmad/custom/*.toml` exists in the installed `customize.toml` files. If a name differs, edit the override to the installed name and say so in the session log.
+
+Check: `git status --porcelain` lists only `_bmad/`, `.agents/skills/*` and `skills-lock.json` as new, and BMAD's own resolver shows the constitution in the PM persona:
+
+```
+uv run _bmad/scripts/resolve_customization.py --skill .agents/skills/bmad-agent-pm --project-root . --key agent
+```
+
+Its `persistent_facts` must list `file:{project-root}/AGENTS.md` and its `principles` must include the four from the override.
 
 ## 5. Make the skills visible to every agent
 
@@ -105,10 +118,12 @@ git config core.hooksPath .githooks
 Edit `.github/workflows/harness-gates.yml`: replace `<TEST_COMMAND>`. Edit `scripts/prepush_check.py`: adjust the `SKIP` regex so tests, docs and generated files in this layout are not counted as production code; leave `BASE` unless the base branch is not `origin/main`. Then make the gate binding, the one manual step:
 
 ```
-gh api -X PUT repos/<owner>/<name>/branches/main/protection -f required_status_checks[strict]=true -f required_status_checks[contexts][]=gates -f enforce_admins=true -f required_pull_request_reviews= -f restrictions=
+gh api -X PUT repos/<owner>/<name>/branches/main/protection --input - <<'EOF'
+{"required_status_checks":{"strict":true,"contexts":["gates"]},"enforce_admins":true,"required_pull_request_reviews":null,"restrictions":null}
+EOF
 ```
 
-(If the API shape rejects a field, set branch protection in the repository settings: require the `gates` status check on `main`.)
+(PowerShell: write that JSON to a file and pass `--input protection.json`. The `-f` form does not work: it sends strings where the API wants booleans. If GitHub refuses with a plan message on a free private repository, make the repository public or set the rule in the repository settings: require the `gates` status check on `main`.)
 
 Check: create `docs/memory/x.md` with a 900-byte body and try to commit: the commit is refused with `memory-schema`. Delete the file. Make a two-commit branch whose second commit touches a production file not in the first: `git push` is refused by RULE ONE. Delete the branch.
 
@@ -133,9 +148,11 @@ Run the loop once on a trivial change, exactly as a real session would:
 3. Make the change.
 4. `harness-close` (it runs the tests, `--ratchet`, and `save_transcript.py`).
 5. Commit with the body `Surface: <files>`, `Tests: <command> -> <summary line>`, `Review: clean after 1 round`.
-6. `git push` on the person's go. After CI is green with a coverage report: `python scripts/harness_lint.py --ratchet --update-baseline` sets the line and branch floors; commit `coverage_baseline.json`.
+6. Push on the person's go. After CI is green with a coverage report: `python scripts/harness_lint.py --ratchet --update-baseline` sets the line and branch floors; commit `coverage_baseline.json`.
 
-Check: `docs/sessions/raw/<your host>/` holds this session's transcript; CI shows `gates` green on the push. A bootstrap that ends without this proof is not done.
+`main` is protected, so push a branch and open a pull request (`gh pr create`); merge when `gates` is green.
+
+Check: `docs/sessions/raw/<your host>/` holds this session's transcript; CI shows `gates` green on the pull request. If no run appears within a few minutes (`gh run list` empty, no github-actions check suite on the head commit), Actions is not starting jobs for this repository: check the account's Actions minutes and spending limit (`gh auth refresh -h github.com -s user`, then Settings > Billing), or make the repository public, before concluding anything is wrong with the workflow. A bootstrap that ends without this proof is not done.
 
 ## 10. Optional, token side (say which you did in the session log)
 
