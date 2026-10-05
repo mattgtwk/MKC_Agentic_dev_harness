@@ -1,6 +1,6 @@
 # BOOTSTRAP: stand up the agentic development harness in an empty folder
 
-You are a coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot, Gemini CLI or another) working with a person in a new, empty project folder. This file is all you need: it names where the kit lives and how to get every tool, starting from a machine with nothing installed. Follow the steps in order. Each step ends with a check; do not move on until it passes. Ask the person only where a step says to. Steps 4 and 6 are the person's to approve, not yours to route around: step 4 installs third-party code and step 6 arms and tunes the guards that police you, and a host in an autonomous mode (Claude Code auto mode) rightly refuses both. When it does, stop and ask the person to approve: in Claude Code they press Shift+Tab to leave auto mode so each command comes up as a permission prompt, or they type the command themselves with a `!` prefix. Then continue. Everything you create is committed to the project; nothing of record is left in your vendor's home folder.
+You are a coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot, Gemini CLI or another) working with a person in a new project folder, empty or holding files not yet under git. This file is all you need: it names where the kit lives and how to get every tool, starting from a machine with nothing installed. Follow the steps in order. Each step ends with a check; do not move on until it passes. Ask the person only where a step says to. When a check fails or your host refuses a command, find the symptom in **When a step fails** at the end, tell the person what happened, offer the options listed there, and do what they choose. Never reword a refused command to get it past your host: steps 4 and 6 install third-party code and arm the guards that police you, and a host that refuses them is right to. Everything you create is committed to the project; nothing of record is left in your vendor's home folder.
 
 **The kit:** https://github.com/mattgtwk/MKC_Agentic_dev_harness (public). Its `harness/` folder mirrors the target repository root; `harness/docs/HARNESS.md` explains the result in one page. This file is `BOOTSTRAP.md` at the root of that repository; the raw URL is https://raw.githubusercontent.com/mattgtwk/MKC_Agentic_dev_harness/main/BOOTSTRAP.md.
 
@@ -24,7 +24,7 @@ Check: every row's check command prints a version; `gh auth status` shows a logg
 
 ## 1. Repository and remote
 
-Ask the person: repository name, owner (their account or an organisation), private or public.
+Ask the person: repository name, owner (their account or an organisation), private or public. Tell them before they choose: on a free GitHub plan a private repository cannot make the CI gate binding (step 6) and spends limited Actions minutes; public, or a paid plan, has neither limit.
 
 ```
 git init -b main
@@ -34,6 +34,8 @@ git push -u origin main
 ```
 
 The empty first push exists because the push guard armed in step 6 needs a merge base with `origin/main`.
+
+If the folder already holds files (art, documents, an old codebase), ask the person whether to commit them now as a second commit and push it. Anything committed before step 6 is never judged by the push guard; anything added later is.
 
 Check: `git ls-remote origin main` prints a sha.
 
@@ -67,13 +69,13 @@ Check: `ls -a` (or `Get-ChildItem -Force`) shows `.agents`, `.githooks`, `.githu
 
 ## 3. Write AGENTS.md
 
-Ask the person six questions: project name; stack; the test command, and that it can write a Cobertura `coverage.xml` (pytest: `--cov --cov-branch --cov-report=xml`; Jest: `--coverage --coverageReporters=cobertura`; .NET: coverlet with the cobertura format); the coverage report path; the work tracker, or none; sibling repositories, or none. Fill every `<placeholder>` in `AGENTS.md` Part B, `NEXT-STEPS.md`, `docs/ARCHITECTURE.md` (set `last_reviewed` to today), `docs/adr/0001-adopt-harness.md` and `docs/adr/README.md`. Read Part A once in full. Delete any Part A rule the person does not want and cannot name an enforcement for; keep "Enforced by: convention" only where it is true. Do not add rules yet.
+Ask the person seven questions: project name; stack; the test command, and that it can write a Cobertura `coverage.xml` (pytest: `--cov --cov-branch --cov-report=xml`; Jest: `--coverage --coverageReporters=cobertura`; .NET: coverlet with the cobertura format); the coverage report path; the work tracker, or none; sibling repositories, or none; what the repository will hold besides source code (images, documents, art, 3D models, data), by file extension, or none. Fill every `<placeholder>` in `AGENTS.md` Part B, `NEXT-STEPS.md`, `docs/ARCHITECTURE.md` (set `last_reviewed` to today), `docs/adr/0001-adopt-harness.md` and `docs/adr/README.md`. Read Part A once in full. Delete any Part A rule the person does not want and cannot name an enforcement for; keep "Enforced by: convention" only where it is true. Do not add rules yet.
 
 Check: `python scripts/harness_lint.py` shows `agents-present`, `agents-size`, `rule-enforcement`, `adr-refs`, `adapter-thin` and `context-budget` as PASS. Other checks may still fail; the next steps fix them.
 
 ## 4. Install the four skill sets, pinned
 
-Install for **one** agent only, Codex, whose folder is `.agents/skills/`. Do this even if you are not Codex: every agent reads that folder directly or through the junctions created in step 5, and one folder keeps `skills-lock.json` honest. `-a codex -y` makes the installer non-interactive; if it still asks, answer Codex and yes. If your host refuses them, hand them to the person (see the top of this file).
+Install for **one** agent only, Codex, whose folder is `.agents/skills/`. Do this even if you are not Codex: every agent reads that folder directly or through the junctions created in step 5, and one folder keeps `skills-lock.json` honest. `-a codex -y` makes the installer non-interactive; if it still asks, answer Codex and yes. If your host refuses them, see **When a step fails**.
 
 ```
 npx skills add bmad-code-org/BMAD-METHOD -a codex -s '*' -y
@@ -111,13 +113,13 @@ Check: `--doctor` prints no ERROR other than `core.hooksPath` (armed next). Type
 
 ## 6. Arm enforcement
 
-The person approves this step (see the top of this file).
+Start only once step 5's check passes: the hooks run the lint, and while it fails every commit is refused.
 
 ```
 git config core.hooksPath .githooks
 ```
 
-Edit `.github/workflows/harness-gates.yml`: replace `<TEST_COMMAND>`. Edit `scripts/prepush_check.py`: adjust the `SKIP` regex so tests, docs and generated files in this layout are not counted as production code; leave `BASE` unless the base branch is not `origin/main`. Then make the gate binding, the one manual step:
+Edit `.github/workflows/harness-gates.yml`: replace `<TEST_COMMAND>`. Edit `scripts/prepush_check.py`: adjust the `SKIP` regex so tests, docs, generated files and every extension from question seven are not counted as production code (for example add `|\.(png|jpe?g|pdf|pptx|stl|3mf)$`); leave `BASE` unless the base branch is not `origin/main`. Then make the gate binding, the one manual step:
 
 ```
 gh api -X PUT repos/<owner>/<name>/branches/main/protection --input - <<'EOF'
@@ -125,7 +127,7 @@ gh api -X PUT repos/<owner>/<name>/branches/main/protection --input - <<'EOF'
 EOF
 ```
 
-(PowerShell has no heredoc; pipe the JSON instead: `'{...same JSON...}' | gh api -X PUT repos/<owner>/<name>/branches/main/protection --input -`. Never use `-f`: it sends `"true"` as a string and GitHub answers 422 "is not a boolean". If GitHub refuses with a plan message on a free private repository, make the repository public or set the rule in the repository settings: require the `gates` status check on `main`.)
+(PowerShell has no heredoc; pipe the JSON instead: `'{...same JSON...}' | gh api -X PUT repos/<owner>/<name>/branches/main/protection --input -`. Never use `-f`: it sends `"true"` as a string and GitHub answers 422 "is not a boolean".)
 
 Check: create `docs/memory/x.md` with a 900-byte body and try to commit: the commit is refused with `memory-schema`. Delete the file. Make a two-commit branch whose second commit touches a production file not in the first: `git push` is refused by RULE ONE. Delete the branch.
 
@@ -154,7 +156,7 @@ Run the loop once on a trivial change, exactly as a real session would:
 
 `main` is protected, so push a branch and open a pull request (`gh pr create`); merge when `gates` is green.
 
-Check: `docs/sessions/raw/<your host>/` holds this session's transcript; CI shows `gates` green on the pull request. If no run appears within a few minutes (`gh run list` empty, no github-actions check suite on the head commit), Actions is not starting jobs for this repository: check the account's Actions minutes and spending limit (`gh auth refresh -h github.com -s user`, then Settings > Billing), or make the repository public, before concluding anything is wrong with the workflow. A bootstrap that ends without this proof is not done.
+Check: `docs/sessions/raw/<your host>/` holds this session's transcript; CI shows `gates` green on the pull request. A bootstrap that ends without this proof is not done.
 
 ## 10. Optional, token side (say which you did in the session log)
 
@@ -173,3 +175,20 @@ npx skills experimental_install     # restores .agents/skills from skills-lock.j
 ## What you must not do
 
 Do not create a `CONSTITUTION.md`, a long `CLAUDE.md`, or rules in any vendor file: four of the six agents never read them. Do not junction your vendor's auto-memory folder into `docs/memory/`; promote by hand at close. Do not edit `skills-lock.json` or anything under `.agents/skills/` that was installed. Do not skip the proof.
+
+## When a step fails
+
+Tell the person the symptom and its cause in a sentence, offer the options, and do what they choose. Note the choice in the session log.
+
+| Step | Symptom | Cause | Options to offer |
+|---|---|---|---|
+| any | Your host refuses a command as untrusted code or tampering (Claude Code auto mode does this for steps 4 and 6) | Installing third-party code and arming the guards that police you need the person's approval | (a) They press Shift+Tab to leave auto mode, and you rerun so each command comes up as a permission prompt. (b) They type it themselves with a `!` prefix in Claude Code. (c) They run it in their own terminal. Never reword the command to get past the host. |
+| 0 | `python` opens the Microsoft Store | Windows app alias | Use `py -3`. |
+| 2 | Deleting the kit clone is refused | Deleting outside the project | (a) Clone into your scratch or temp folder instead and leave it. (b) The person deletes `../_harness_kit`. |
+| 2 | A selftest fails | This machine differs from what the scripts expect | Stop and report the output to the person; do not edit the scripts. |
+| 4 | The installer installs nothing | Unquoted `*` was glob-expanded | Quote it: `'*'`. |
+| 6 | Every commit is refused after arming | The lint still fails (usually skills missing) | (a) Finish steps 4 and 5 first. (b) `git config --unset core.hooksPath` until they pass, then arm again. |
+| 6 | `gh api` answers 422 "is not a boolean" | `-f` sends strings | Use the heredoc, or the PowerShell pipe one-liner. |
+| 6 | `gh api` refuses with a plan or upgrade message | Free private repositories cannot enforce branch protection | (a) Make the repository public. (b) Upgrade to GitHub Pro or Team. (c) Leave the gate advisory: CI still runs, but merging is not blocked; record that in `NEXT-STEPS.md`. |
+| 6, later | `git push` refused by RULE ONE for an image, document or model file | Its extension is not in `SKIP` | Add the extension to `SKIP` in `scripts/prepush_check.py` and commit that alone, with the person's approval. |
+| 9 | No CI run appears within a few minutes (`gh run list` empty) | Actions is not starting jobs: minutes or spending limit on a private repository | (a) The person checks Settings > Billing (`gh auth refresh -h github.com -s user` lets you read it). (b) Make the repository public. Do not change the workflow first. |
