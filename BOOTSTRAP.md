@@ -73,7 +73,7 @@ Check: `python scripts/harness_lint.py` shows `agents-present`, `agents-size`, `
 
 ## 4. Install the four skill sets, pinned
 
-Install for **one** agent only, Codex, whose folder is `.agents/skills/`. Do this even if you are not Codex: every agent reads that folder directly or through the junctions created in step 5, and one folder keeps `skills-lock.json` honest. `-a codex -y` makes the installer non-interactive; if it still asks, answer Codex and yes.
+Install for **one** agent only, Codex, whose folder is `.agents/skills/`. Do this even if you are not Codex: every agent reads that folder directly or through the junctions created in step 5, and one folder keeps `skills-lock.json` honest. `-a codex -y` makes the installer non-interactive; if it still asks, answer Codex and yes. Package installs are ask-first (Part A), so if your host refuses them (Claude Code auto mode does), do not work around it: give the person these four lines to run themselves (in Claude Code, typed with a `!` prefix) and continue from the BMAD setup below once they say done.
 
 ```
 npx skills add bmad-code-org/BMAD-METHOD -a codex -s '*' -y
