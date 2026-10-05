@@ -1,6 +1,6 @@
 # BOOTSTRAP: stand up the agentic development harness in an empty folder
 
-You are a coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot, Gemini CLI or another) working with a person in a new, empty project folder. This file is all you need: it names where the kit lives and how to get every tool, starting from a machine with nothing installed. Follow the steps in order. Each step ends with a check; do not move on until it passes. Ask the person only where a step says to. Everything you create is committed to the project; nothing of record is left in your vendor's home folder.
+You are a coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot, Gemini CLI or another) working with a person in a new, empty project folder. This file is all you need: it names where the kit lives and how to get every tool, starting from a machine with nothing installed. Follow the steps in order. Each step ends with a check; do not move on until it passes. Ask the person only where a step says to. Steps 4 and 6 are the person's to approve, not yours to route around: step 4 installs third-party code and step 6 arms and tunes the guards that police you, and a host in an autonomous mode (Claude Code auto mode) rightly refuses both. When it does, stop and ask the person to approve: in Claude Code they press Shift+Tab to leave auto mode so each command comes up as a permission prompt, or they type the command themselves with a `!` prefix. Then continue. Everything you create is committed to the project; nothing of record is left in your vendor's home folder.
 
 **The kit:** https://github.com/mattgtwk/MKC_Agentic_dev_harness (public). Its `harness/` folder mirrors the target repository root; `harness/docs/HARNESS.md` explains the result in one page. This file is `BOOTSTRAP.md` at the root of that repository; the raw URL is https://raw.githubusercontent.com/mattgtwk/MKC_Agentic_dev_harness/main/BOOTSTRAP.md.
 
@@ -73,7 +73,7 @@ Check: `python scripts/harness_lint.py` shows `agents-present`, `agents-size`, `
 
 ## 4. Install the four skill sets, pinned
 
-Install for **one** agent only, Codex, whose folder is `.agents/skills/`. Do this even if you are not Codex: every agent reads that folder directly or through the junctions created in step 5, and one folder keeps `skills-lock.json` honest. `-a codex -y` makes the installer non-interactive; if it still asks, answer Codex and yes. Package installs are ask-first (Part A), so if your host refuses them (Claude Code auto mode does), do not work around it: give the person these four lines to run themselves (in Claude Code, typed with a `!` prefix) and continue from the BMAD setup below once they say done.
+Install for **one** agent only, Codex, whose folder is `.agents/skills/`. Do this even if you are not Codex: every agent reads that folder directly or through the junctions created in step 5, and one folder keeps `skills-lock.json` honest. `-a codex -y` makes the installer non-interactive; if it still asks, answer Codex and yes. If your host refuses them, hand them to the person (see the top of this file).
 
 ```
 npx skills add bmad-code-org/BMAD-METHOD -a codex -s '*' -y
@@ -111,6 +111,8 @@ Check: `--doctor` prints no ERROR other than `core.hooksPath` (armed next). Type
 
 ## 6. Arm enforcement
 
+The person approves this step (see the top of this file).
+
 ```
 git config core.hooksPath .githooks
 ```
@@ -123,7 +125,7 @@ gh api -X PUT repos/<owner>/<name>/branches/main/protection --input - <<'EOF'
 EOF
 ```
 
-(PowerShell: write that JSON to a file and pass `--input protection.json`. The `-f` form does not work: it sends strings where the API wants booleans. If GitHub refuses with a plan message on a free private repository, make the repository public or set the rule in the repository settings: require the `gates` status check on `main`.)
+(PowerShell has no heredoc; pipe the JSON instead: `'{...same JSON...}' | gh api -X PUT repos/<owner>/<name>/branches/main/protection --input -`. Never use `-f`: it sends `"true"` as a string and GitHub answers 422 "is not a boolean". If GitHub refuses with a plan message on a free private repository, make the repository public or set the rule in the repository settings: require the `gates` status check on `main`.)
 
 Check: create `docs/memory/x.md` with a 900-byte body and try to commit: the commit is refused with `memory-schema`. Delete the file. Make a two-commit branch whose second commit touches a production file not in the first: `git push` is refused by RULE ONE. Delete the branch.
 
