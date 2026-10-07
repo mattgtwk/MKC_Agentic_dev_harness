@@ -32,6 +32,7 @@ CONTEXT_MAX = 32 * 1024         # AGENTS.md + CLAUDE.md + GEMINI.md + docs/memor
 CONTEXT_WARN = 24 * 1024
 SKILL_MAX = 15 * 1024
 MEMORY_MAX = 800
+MEMORY_DESC_MAX = 150          # the description is the index line; long ones crowd MEMORY.md out of the context budget
 ARCH_MAX_DAYS = 90
 BASE = os.environ.get("HARNESS_BASE", "origin/main")
 OUR_SKILLS = {"harness-open", "harness-plan", "harness-close"}
@@ -312,6 +313,8 @@ def memory_page_errors(root: Path, page: Path, ids: list[int]) -> list[str]:
             errs.append(f"frontmatter lacks {key}")
     if fm.get("type") and fm["type"] not in ("user", "feedback", "project", "reference"):
         errs.append(f"type '{fm['type']}' not in user|feedback|project|reference")
+    if len(fm.get("description", "")) > MEMORY_DESC_MAX:
+        errs.append(f"description {len(fm['description'])} chars exceeds {MEMORY_DESC_MAX} (it is the index line; detail goes in the body)")
     for field in ("Fact", "Why", "Authority"):
         if not re.search(rf"^\*\*{field}:\*\*", body, re.M):
             errs.append(f"missing **{field}:**")
@@ -856,6 +859,7 @@ def selftest() -> int:
         broken("skill name mismatch", "skills-frontmatter", lambda r: (r / ".agents/skills/harness-open/SKILL.md").write_text("---\nname: wrong\ndescription: d\n---\n", encoding="utf-8"))
         broken("third-party skill without lock", "skills-lock", lambda r: (r / "skills-lock.json").unlink())
         broken("memory page over cap", "memory-schema", lambda r: (r / "docs/memory/one.md").write_text("---\nname: one\ndescription: d\nmetadata:\n  type: project\n---\n**Fact:** " + "x" * 900 + "\n**Why:** y\n**Authority:** AGENTS.md\n", encoding="utf-8"))
+        broken("memory description over cap", "memory-schema", lambda r: (r / "docs/memory/one.md").write_text("---\nname: one\ndescription: " + "x" * (MEMORY_DESC_MAX + 1) + "\nmetadata:\n  type: project\n---\n**Fact:** x\n**Why:** y\n**Authority:** AGENTS.md\n", encoding="utf-8"))
         broken("authority dangling", "memory-authority", lambda r: (r / "docs/memory/one.md").write_text("---\nname: one\ndescription: d\nmetadata:\n  type: project\n---\n**Fact:** x\n**Why:** y\n**Authority:** docs/nope.md\n", encoding="utf-8"))
         broken("index drift", "memory-index", lambda r: (r / "docs/memory/two.md").write_text("---\nname: two\ndescription: d\nmetadata:\n  type: project\n---\n**Fact:** x\n**Why:** y\n**Authority:** AGENTS.md\n", encoding="utf-8"))
         broken("ADR without register row", "adr-register", lambda r: (r / "docs/adr/0002-x.md").write_text("# x\n", encoding="utf-8"))

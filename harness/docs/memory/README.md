@@ -7,7 +7,7 @@ Memory is a cache, not an archive (`AGENTS.md` Part A, section 7). It holds poin
 ```
 ---
 name: <kebab-case, equals the file name>
-description: "<one line; becomes the index line>"
+description: "<one line, 150 chars or fewer; becomes the index line>"
 metadata:
   type: user | feedback | project | reference
 reviewed: true      # optional: a human hand-edited this; revise around it, never overwrite it

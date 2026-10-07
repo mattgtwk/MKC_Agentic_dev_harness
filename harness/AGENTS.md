@@ -1,6 +1,6 @@
 # AGENTS.md
 
-harness-constitution v1.1.0 (kit: github.com/mattgtwk/MKC_Agentic_dev_harness). Every coding agent and every person working in this repository follows this file. Part A is the constitution and is project-agnostic; Part B is this repository. Part B may add detail and may not contradict Part A. `CLAUDE.md` and `GEMINI.md` only import this file.
+harness-constitution v1.2.0 (kit: github.com/mattgtwk/MKC_Agentic_dev_harness). Every coding agent and every person working in this repository follows this file. Part A is the constitution and is project-agnostic; Part B is this repository. Part B may add detail and may not contradict Part A. `CLAUDE.md` and `GEMINI.md` only import this file.
 
 A rule enters Part A only if it names (a) the value it adds, (b) how it is enforced, and (c) what it displaces. A rule that cannot name an enforcement says "Enforced by: convention" and means it. This file stays under 24 KB (`agents-size`); the always-loaded set (this file, the two adapters, `docs/memory/MEMORY.md`) stays under 32 KB (`context-budget`).
 
@@ -66,7 +66,7 @@ A rule enters Part A only if it names (a) the value it adds, (b) how it is enfor
 | `agents-present`, `agents-size`, `rule-enforcement`, `adr-refs` | this file exists with its version line, under 24 KB; every Part A rule names its enforcement; no ADR numbers in Part A |
 | `adapter-thin`, `context-budget` | adapters import only; always-loaded set under 32 KB |
 | `skill-refs`, `skills-frontmatter`, `skills-lock` | every cited skill exists; valid frontmatter and size; third-party skills pinned |
-| `memory-schema`, `memory-authority`, `memory-index` | Fact/Why/Authority, 800 B, Authority resolves, index matches (`--rebuild-index`) |
+| `memory-schema`, `memory-authority`, `memory-index` | Fact/Why/Authority, 800 B, description 150 chars, Authority resolves, index matches (`--rebuild-index`) |
 | `adr-register`, `architecture-map`, `claims` | one register row per ADR; one map with `last_reviewed` (warn after 90 days); every `verify:` claim holds |
 | `secrets-scan` | no token-shaped literals in docs or transcripts; no tracked `.env` |
 | `surface`, `one-kind`, `trailers`, `session-log`, `promotions` (`--prepush`) | `Surface:` in the first commit; product and tooling not mixed; `Review:` and `Tests:` present; `docs/sessions/` touched when source changed; every session log lists its promotions and each named owner file is in the change |
@@ -78,7 +78,7 @@ A rule enters Part A only if it names (a) the value it adds, (b) how it is enfor
 ### 7. Skills and memory
 
 - **A skill is created only when the procedure was needed twice, took more than thirty minutes to work out, and is not obvious from the docs.** Below that bar it is a note in an existing skill or a memory pointer. Imported skills enter through the same gate and are pinned. Enforced by: convention; `skills-lock`.
-- **Memory is a cache, not an archive.** A page is `**Fact:**`, `**Why:**`, `**Authority:**` under 800 bytes; the Authority is a `path`, a `path#heading` or an `ADR-NNNN` and must resolve. Never restate a rule in memory: memory is read first, so a stale copy beats the truth. Revise in place; a hand-edited page carries `reviewed: true`. Vendor auto-memory is not a store of record: anything durable it holds is promoted into `docs/memory/` at close. Enforced by: `memory-schema`, `memory-authority`, `memory-index`.
+- **Memory is a cache, not an archive.** A page is `**Fact:**`, `**Why:**`, `**Authority:**` under 800 bytes, and its `description:` (the index line) is 150 characters or fewer, so the index stays inside the context budget; the Authority is a `path`, a `path#heading` or an `ADR-NNNN` and must resolve. Never restate a rule in memory: memory is read first, so a stale copy beats the truth. Revise in place; a hand-edited page carries `reviewed: true`. Vendor auto-memory is not a store of record: anything durable it holds is promoted into `docs/memory/` at close. Enforced by: `memory-schema`, `memory-authority`, `memory-index`.
 - **Promote every lesson to its owner before the work closes.** Each lesson gets a kind and an owner file, listed in the session log under `## Lessons promoted` as `- <kind> -> <owner path>` (or `- none: <reason>`); the item counts only when that file is in the same change. Naming the owner is not promoting to it. A procedure learned twice becomes a skill here. Enforced by: `promotions` at push; `harness-close` step 6.
 - **Prune on schedule.** At each retrospective a skill unused for a cycle is fixed or deleted and a drifted claim is a defect. Enforced by: the `bmad-retrospective` override in `_bmad/custom/`; convention.
 
