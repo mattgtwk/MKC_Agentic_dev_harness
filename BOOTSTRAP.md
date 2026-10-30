@@ -93,6 +93,8 @@ uv run .agents/skills/bmad/scripts/setup.py --project-root . --skill .agents/ski
 
 If the status JSON lists `pending_questions`, answer them by invoking the `bmad` skill and asking it to run setup; decline any offer to update skills during bootstrap. Then `python scripts/harness_lint.py --doctor` confirms every key in `_bmad/custom/*.toml` exists in the installed `customize.toml` files. If a name differs, edit the override to the installed name and say so in the session log.
 
+If the project has a user interface (web, app or anything with screens), also install the kit's design rulebook: `npx skills add mattgtwk/MKC_Agentic_dev_harness -a codex -s interfaces-design-bible -y`. Skip it otherwise and say which you chose in the session log.
+
 Check: `git status --porcelain` lists only `_bmad/`, `.agents/skills/*` and `skills-lock.json` as new, and BMAD's own resolver shows the constitution in the PM persona:
 
 ```
@@ -158,11 +160,12 @@ Run the loop once on a trivial change, exactly as a real session would:
 
 Check: `docs/sessions/raw/<your host>/` holds this session's transcript; CI shows `gates` green on the pull request. A bootstrap that ends without this proof is not done.
 
-## 10. Optional, token side (say which you did in the session log)
+## 10. Optional extras (say which you did in the session log)
 
 - `caveman-compress` on `NEXT-STEPS.md` and memory pages only, never on `AGENTS.md`; run the lint after.
 - The caveman proxy, per machine, for input-side compression of logs, JSON and diffs: `npm install -g @caveman-ai/cli`, `caveman setup --install`, `caveman start`. Its own numbers: 33.2% fewer input tokens over 54 runs; the voice alone about 3% of output.
 - A Claude Code `SessionStart` hook that prints `cat docs/memory/MEMORY.md NEXT-STEPS.md` is a convenience; the gates above are the guarantee.
+- A code knowledge graph (graphify), only for an inherited or large codebase, recurring multi-hop impact questions, or a corpus of papers or media; below that, grep is as good and cheaper. CLI only: `uv tool install graphifyy==0.9.94` (two y's), add `graphify-out/` to `.gitignore`, set `GRAPHIFY_BACKEND=none` (code only, nothing leaves the machine) and `GRAPHIFY_QUERY_LOG_DISABLE=1`, build with `graphify extract . --code-only`, refresh after a pull with `graphify update .`, ask with `graphify query "<question>"`. Never run `graphify install`, `graphify claude install`, `graphify hook install` or `--project`: they add vendor hooks to `.claude/settings.json`, scripts to the tracked `.githooks/`, always-on text to `AGENTS.md` and `~/.claude/CLAUDE.md`, and a section to `CLAUDE.md`, which fails `adapter-thin`; the kit keeps all of that out. This recipe is read from graphify's docs and source at 0.9.94 and has not been run here.
 
 ## Fresh clone of a bootstrapped repository
 

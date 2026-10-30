@@ -1,6 +1,6 @@
 # AGENTS.md
 
-harness-constitution v1.2.0 (kit: github.com/mattgtwk/MKC_Agentic_dev_harness). Every coding agent and every person working in this repository follows this file. Part A is the constitution and is project-agnostic; Part B is this repository. Part B may add detail and may not contradict Part A. `CLAUDE.md` and `GEMINI.md` only import this file.
+harness-constitution v1.3.0 (kit: github.com/mattgtwk/MKC_Agentic_dev_harness). Every coding agent and every person working in this repository follows this file. Part A is the constitution and is project-agnostic; Part B is this repository. Part B may add detail and may not contradict Part A. `CLAUDE.md` and `GEMINI.md` only import this file.
 
 A rule enters Part A only if it names (a) the value it adds, (b) how it is enforced, and (c) what it displaces. A rule that cannot name an enforcement says "Enforced by: convention" and means it. This file stays under 24 KB (`agents-size`); the always-loaded set (this file, the two adapters, `docs/memory/MEMORY.md`) stays under 32 KB (`context-budget`).
 

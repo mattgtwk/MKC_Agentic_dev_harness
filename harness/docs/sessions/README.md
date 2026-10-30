@@ -17,11 +17,13 @@ Written by `harness-close` step 8, in full sentences, from this shape:
 ## Gates (lint, prepush, ratchet: outcome)
 ## Lessons promoted
 - <kind> -> <owner path>        kind: rule | repo fact | invariant | procedure | decision | pointer
+  evidence: <the test that went red then green, the incident, or the session-log line>
 - none: <reason>                when nothing outlives the session
+- none: confounded: <lesson>    when the cause was not isolated
 ## Next steps
 ```
 
-The push gate (`promotions`) requires the `## Lessons promoted` section in every session log it pushes and refuses a named owner path that the push does not change.
+When a push changes source or tooling, the push gate (`promotions`) requires the `## Lessons promoted` section in every session log it pushes, and refuses a named owner path that the push does not change or text after the owner path on the bullet line. It does not read the evidence line; that is convention.
 
 ## Raw transcripts: `docs/sessions/raw/<host>/<YYMMDDhhmm>-<file>`
 

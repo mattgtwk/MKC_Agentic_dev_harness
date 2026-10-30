@@ -24,7 +24,7 @@ One page. The rules are in `AGENTS.md` Part A; this explains the shape so a newc
 1. **Git hooks** (`.githooks/`, armed by `git config core.hooksPath .githooks`): pre-commit runs the lint in under a second; pre-push adds the commit-range checks (declared Surface, one kind, `Tests:` and `Review:` trailers, a session log with its `## Lessons promoted` list whose owner files are in the change) and the declared-surface guard. Both are shell plus stdlib Python, so every agent and every human gets the same gate.
 2. **CI** (`.github/workflows/harness-gates.yml`): the same lint, the test suite, and the coverage ratchet (line and branch floors that only rise, plus a minimum on the executable lines a change adds), on every push and pull request. Branch protection on `main` makes it binding; that is the one manual step in bootstrap.
 3. **Skills**: the open/plan/close procedures. They make the loop fast and legible; they are not the guarantee.
-4. **Vendor hooks**: none shipped. If you add a Claude Stop hook that runs the lint, it is a convenience over the same script.
+4. **Vendor hooks**: none shipped. If you add a Claude Stop hook that runs the lint, it is a convenience over the same script. An in-loop hook catches a problem at the turn and git or CI catch it at the commit; the kit keeps the lever every agent shares.
 
 A check that could not run reports WARN, never PASS.
 
@@ -36,7 +36,7 @@ A check that could not run reports WARN, never PASS.
 | ponytail | what gets built: the laziest solution that works | the second planning stance; a rule in Part A section 4 |
 | caveman | how it is said and how much is read | voice on by default (rule in Part A section 5); `caveman-compress` for prose files; the proxy is optional per machine |
 
-None is forked. Each is installed by `npx skills add` into `.agents/skills/` and pinned in `skills-lock.json`.
+None is forked. Each is installed by `npx skills add` into `.agents/skills/` and pinned in `skills-lock.json`. A project with a user interface also installs the kit's own `interfaces-design-bible` the same way (step 4 of the kit's `BOOTSTRAP.md`).
 
 ## Token budget
 
@@ -63,8 +63,8 @@ Proven by run in bootstrap where the tool is installed; by citation otherwise.
 
 ## Deliberately not built (upgrade paths)
 
-Constitution vendoring with a hash header across repos; TestDoc metadata and a test catalog; test-run receipts; an evidence ledger linking regression tests to historical bugs; a cross-repo impact tool; telemetry; reviewer, security and mutation-prover subagents; a persona review panel for documents; an append-only action log for outward writes; two-layer dated memory; BMAD Builder custom agents; the caveman proxy and cavecrew presets; Claude hook adapters; a pattern-card catalog (`docs/PATTERNS.md`, create it at the first card). Each has a known source in the MKC repositories; add one when a measured need appears, not before.
+Constitution vendoring with a hash header across repos; TestDoc metadata and a test catalog; test-run receipts; an evidence ledger linking regression tests to historical bugs; a cross-repo impact tool; telemetry; reviewer, security and mutation-prover subagents; a persona review panel for documents; an append-only action log for outward writes; two-layer dated memory; BMAD Builder custom agents; the caveman proxy and cavecrew presets; Claude hook adapters; a pattern-card catalog (`docs/PATTERNS.md`, create it at the first card). Each has a known source in the MKC repositories. One more has an outside source: a code knowledge graph (graphify, or a code-graph MCP), for an inherited or large codebase, recurring multi-hop impact questions, or a corpus of papers or media; step 10 of the kit's `BOOTSTRAP.md` has the safe recipe, and below that size grep wins. Add one when a measured need appears, not before.
 
 ## Upgrading a bootstrapped project
 
-Re-copy `harness/` from the kit over the repo, keep your Part B and your records, bump the version line, run `python scripts/harness_lint.py --doctor --relink` and the lint. `npx skills experimental_install` restores the pinned skills on a fresh clone; `npx skills update` upgrades them and rewrites `skills-lock.json`, after which `--doctor` re-checks every override key.
+Tell your agent to follow `UPGRADE.md` from the kit named on line 3 of `AGENTS.md`. It applies only the entries newer than your version line, oldest first, shows you every local change to Part A before replacing it, and touches Part B and your records only where an entry says so. The fallback is the whole re-copy: copy `harness/` from the kit over the repo, keep your Part B and your records, bump the version line, run `python scripts/harness_lint.py --doctor --relink` and the lint. `npx skills experimental_install` restores the pinned skills on a fresh clone; `npx skills update` upgrades them and rewrites `skills-lock.json`, after which `--doctor` re-checks every override key.
