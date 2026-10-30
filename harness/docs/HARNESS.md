@@ -36,7 +36,7 @@ A check that could not run reports WARN, never PASS.
 | ponytail | what gets built: the laziest solution that works | the second planning stance; a rule in Part A section 4 |
 | caveman | how it is said and how much is read | voice on by default (rule in Part A section 5); `caveman-compress` for prose files; the proxy is optional per machine |
 
-None is forked. Each is installed by `npx skills add` into `.agents/skills/` and pinned in `skills-lock.json`. A project with a user interface also installs the kit's own `interfaces-design-bible` the same way (step 4 of the kit's `BOOTSTRAP.md`).
+None is forked. Each is installed by `npx skills add` into `.agents/skills/` and pinned in `skills-lock.json`. Two opt-in skills come from the kit itself and install the same way (step 4 of the kit's `BOOTSTRAP.md`): `interfaces-design-bible` for a project with a user interface, `open-executive` for one that ships client deliverables.
 
 ## Token budget
 

@@ -93,7 +93,7 @@ uv run .agents/skills/bmad/scripts/setup.py --project-root . --skill .agents/ski
 
 If the status JSON lists `pending_questions`, answer them by invoking the `bmad` skill and asking it to run setup; decline any offer to update skills during bootstrap. Then `python scripts/harness_lint.py --doctor` confirms every key in `_bmad/custom/*.toml` exists in the installed `customize.toml` files. If a name differs, edit the override to the installed name and say so in the session log.
 
-If the project has a user interface (web, app or anything with screens), also install the kit's design rulebook: `npx skills add mattgtwk/MKC_Agentic_dev_harness -a codex -s interfaces-design-bible -y`. Skip it otherwise and say which you chose in the session log.
+If the project has a user interface (web, app or anything with screens), also install the kit's design rulebook: `npx skills add mattgtwk/MKC_Agentic_dev_harness -a codex -s interfaces-design-bible -y`. If the project produces client-facing deliverables (reports, proposals, board papers), also install the executive-panel review: `npx skills add mattgtwk/MKC_Agentic_dev_harness -a codex -s open-executive -y`. Skip either otherwise and say which you chose in the session log.
 
 Check: `git status --porcelain` lists only `_bmad/`, `.agents/skills/*` and `skills-lock.json` as new, and BMAD's own resolver shows the constitution in the PM persona:
 

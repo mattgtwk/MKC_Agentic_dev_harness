@@ -18,7 +18,8 @@ You are an agent in a repository that was bootstrapped from this kit (github.com
 - **Doc.** A memory `description:` names the situation an agent needs the page in. Re-copy `docs/memory/README.md`.
 - **Doc.** A code knowledge graph (graphify) is an upgrade path with a trigger; the in-loop hook vs git/CI trade-off is stated; upgrades point here. Re-copy `docs/HARNESS.md`.
 - **Optional, projects with a user interface.** The kit's design rulebook: `npx skills add mattgtwk/MKC_Agentic_dev_harness -a codex -s interfaces-design-bible -y`.
-- Check: step 6 of the harness-close skill mentions `confounded`; if the skill was installed, `skills-lock.json` lists `interfaces-design-bible`.
+- **Optional, projects with client-facing deliverables.** The executive-panel review: `npx skills add mattgtwk/MKC_Agentic_dev_harness -a codex -s open-executive -y`. A project that already carries a hand-copied `open-executive` folder, absent from `skills-lock.json`, asks the person: keep it as it is (unpinned), or move its project-specific rules (jurisdiction, file paths, review order) into Part B, delete the folder and install this one.
+- Check: step 6 of the harness-close skill mentions `confounded`; `skills-lock.json` lists each optional skill installed.
 
 ## v1.2.0 (2026-10-07)
 
