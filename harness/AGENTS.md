@@ -110,7 +110,7 @@ A rule enters Part A only if it names (a) the value it adds, (b) how it is enfor
 
 ### 11. Changing Part A
 
-- **A change needs** a stated trigger (an incident or an idea), the three questions from the preamble answered (value, enforcement, what it displaces), a version bump of the line at the top, and a review by someone who did not write it; working solo, a `grill-me` pass. Enforced by: `agents-present` (version line); convention.
+- **A change needs** a stated trigger (an incident or an idea), the three questions from the preamble answered (value, enforcement, what it displaces), a version bump of the line at the top (a project's own change adds `-local.N` to the kit version, as `v1.3.0-local.1`, so `UPGRADE.md` can tell the two apart), and a review by someone who did not write it; working solo, a `grill-me` pass. Enforced by: `agents-present` (version line); convention.
 
 ## Part B: This repository
 

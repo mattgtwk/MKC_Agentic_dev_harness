@@ -115,7 +115,7 @@ recorded there, not here.
   from the data.
 - **The panel advises; it does not get a vote on scope.** A recommendation to restructure the
   deliverable goes to the user as an open question, not into the build.
-- **Nothing leaves this machine** (`AGENTS.md` Part A section 9, Access boundaries). Never pass
+- **Nothing leaves this machine** (stricter than `AGENTS.md` Part A section 9, Access boundaries, which allows network use the person approves). Never pass
   the `WEB_SEARCH_ADDENDUM` or `MCP_ADDENDUM`. Tell every reviewer in its prompt that it may read
   local files only: no web search, no fetch, no MCP or connector tool, no publishing. Prefer a
   read-only agent type and have it return the memo in its report, for the main agent to write.

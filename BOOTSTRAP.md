@@ -73,7 +73,7 @@ Ask the person seven questions: project name; stack; the test command, and that 
 
 Check: `python scripts/harness_lint.py` shows `agents-present`, `agents-size`, `rule-enforcement`, `adr-refs`, `adapter-thin` and `context-budget` as PASS. Other checks may still fail; the next steps fix them.
 
-## 4. Install the four skill sets, pinned
+## 4. Install the four skill sets, and any opt-in kit skills, pinned
 
 Install for **one** agent only, Codex, whose folder is `.agents/skills/`. Do this even if you are not Codex: every agent reads that folder directly or through the junctions created in step 5, and one folder keeps `skills-lock.json` honest. `-a codex -y` makes the installer non-interactive; if it still asks, answer Codex and yes. If your host refuses them, see **When a step fails**.
 

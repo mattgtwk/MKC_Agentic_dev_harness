@@ -5,7 +5,7 @@ description: Use when building, changing or reviewing a user interface - compone
 
 # Interfaces design bible
 
-The rules and numbers live in `references/bible.md`, by Angus Hervey (Oct 2026), compiled from Jakub Krehel's Interfaces magazine, cheat sheet and skills, with each rule credited to its source issue. This file says how to apply it.
+The rules and numbers live in `references/bible.md`, by Angus Hervey (Oct 2026), compiled from Jakub Krehel's Interfaces magazine, cheat sheet and skills, with each rule credited to its source issue, and published in this kit with permission. This file says how to apply it.
 
 ## Before you change a topic, read its section
 
