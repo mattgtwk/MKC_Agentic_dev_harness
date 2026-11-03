@@ -4,7 +4,12 @@ You are a coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot, Gemini
 
 **The kit:** https://github.com/mattgtwk/MKC_Agentic_dev_harness (public). Its `harness/` folder mirrors the target repository root; `harness/docs/HARNESS.md` explains the result in one page. This file is `BOOTSTRAP.md` at the root of that repository; the raw URL is https://raw.githubusercontent.com/mattgtwk/MKC_Agentic_dev_harness/main/BOOTSTRAP.md.
 
-**Already a harness?** Before step 0, read line 3 of `AGENTS.md` in this folder, if the file exists. If it starts `harness-constitution v`, the kit already bootstrapped this repository: do not run the steps below. Fetch https://raw.githubusercontent.com/mattgtwk/MKC_Agentic_dev_harness/main/UPGRADE.md, tell the person their version and the newest entry there, and follow it; if their version (without a `-local.N` suffix) is already the newest, say so and stop. If `AGENTS.md` exists without that line, the repository has its own instructions: stop and ask the person before changing anything.
+**Already a harness?** Before step 0, look for `AGENTS.md` in this folder.
+
+- No `AGENTS.md`: run the steps below.
+- It has a `harness-constitution v` line (line 3, unless the project moved it) but no `docs/sessions/session_*.md` yet (step 8 writes the first): a bootstrap stopped part way. Resume at the first step whose check fails.
+- It has that line and a session log: the kit already bootstrapped this repository, so of steps 0 to 10 run only step 0 (check, and install what is missing). If `git config core.hooksPath` does not print `.githooks`, this is a fresh clone: run **Fresh clone of a bootstrapped repository** first. Then fetch https://raw.githubusercontent.com/mattgtwk/MKC_Agentic_dev_harness/main/UPGRADE.md, tell the person their version and the newest entry there, and follow it; if their version (without a `-local.N` suffix) is already the newest, say so and stop.
+- It has no such line anywhere: the repository has its own instructions. Stop and ask the person before changing anything.
 
 ## 0. Environment: check, then install only what is missing
 
