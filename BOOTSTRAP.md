@@ -1,8 +1,10 @@
-# BOOTSTRAP: stand up the agentic development harness in an empty folder
+# BOOTSTRAP: stand up the agentic development harness, or bring one up to date
 
-You are a coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot, Gemini CLI or another) working with a person in a new project folder, empty or holding files not yet under git. This file is all you need: it names where the kit lives and how to get every tool, starting from a machine with nothing installed. Follow the steps in order. Each step ends with a check; do not move on until it passes. Ask the person only where a step says to. When a check fails or your host refuses a command, find the symptom in **When a step fails** at the end, tell the person what happened, offer the options listed there, and do what they choose. Never reword a refused command to get it past your host: steps 4 and 6 install third-party code and arm the guards that police you, and a host that refuses them is right to. Everything you create is committed to the project; nothing of record is left in your vendor's home folder.
+You are a coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot, Gemini CLI or another) working with a person in a new project folder, empty or holding files not yet under git, or in a repository this kit already bootstrapped (see **Already a harness?** below). This file is all you need: it names where the kit lives and how to get every tool, starting from a machine with nothing installed. Follow the steps in order. Each step ends with a check; do not move on until it passes. Ask the person only where a step says to. When a check fails or your host refuses a command, find the symptom in **When a step fails** at the end, tell the person what happened, offer the options listed there, and do what they choose. Never reword a refused command to get it past your host: steps 4 and 6 install third-party code and arm the guards that police you, and a host that refuses them is right to. Everything you create is committed to the project; nothing of record is left in your vendor's home folder.
 
 **The kit:** https://github.com/mattgtwk/MKC_Agentic_dev_harness (public). Its `harness/` folder mirrors the target repository root; `harness/docs/HARNESS.md` explains the result in one page. This file is `BOOTSTRAP.md` at the root of that repository; the raw URL is https://raw.githubusercontent.com/mattgtwk/MKC_Agentic_dev_harness/main/BOOTSTRAP.md.
+
+**Already a harness?** Before step 0, read line 3 of `AGENTS.md` in this folder, if the file exists. If it starts `harness-constitution v`, the kit already bootstrapped this repository: do not run the steps below. Fetch https://raw.githubusercontent.com/mattgtwk/MKC_Agentic_dev_harness/main/UPGRADE.md, tell the person their version and the newest entry there, and follow it; if their version (without a `-local.N` suffix) is already the newest, say so and stop. If `AGENTS.md` exists without that line, the repository has its own instructions: stop and ask the person before changing anything.
 
 ## 0. Environment: check, then install only what is missing
 
@@ -73,7 +75,7 @@ Ask the person seven questions: project name; stack; the test command, and that 
 
 Check: `python scripts/harness_lint.py` shows `agents-present`, `agents-size`, `rule-enforcement`, `adr-refs`, `adapter-thin` and `context-budget` as PASS. Other checks may still fail; the next steps fix them.
 
-## 4. Install the four skill sets, pinned
+## 4. Install the four skill sets, and any opt-in kit skills, pinned
 
 Install for **one** agent only, Codex, whose folder is `.agents/skills/`. Do this even if you are not Codex: every agent reads that folder directly or through the junctions created in step 5, and one folder keeps `skills-lock.json` honest. `-a codex -y` makes the installer non-interactive; if it still asks, answer Codex and yes. If your host refuses them, see **When a step fails**.
 
@@ -92,6 +94,8 @@ uv run .agents/skills/bmad/scripts/setup.py --project-root . --skill .agents/ski
 ```
 
 If the status JSON lists `pending_questions`, answer them by invoking the `bmad` skill and asking it to run setup; decline any offer to update skills during bootstrap. Then `python scripts/harness_lint.py --doctor` confirms every key in `_bmad/custom/*.toml` exists in the installed `customize.toml` files. If a name differs, edit the override to the installed name and say so in the session log.
+
+If the project has a user interface (web, app or anything with screens), also install the kit's design rulebook: `npx skills add mattgtwk/MKC_Agentic_dev_harness -a codex -s interfaces-design-bible -y`. If the project produces client-facing deliverables (reports, proposals, board papers), also install the executive-panel review: `npx skills add mattgtwk/MKC_Agentic_dev_harness -a codex -s open-executive -y`. Skip either otherwise and say which you chose in the session log.
 
 Check: `git status --porcelain` lists only `_bmad/`, `.agents/skills/*` and `skills-lock.json` as new, and BMAD's own resolver shows the constitution in the PM persona:
 
@@ -158,11 +162,12 @@ Run the loop once on a trivial change, exactly as a real session would:
 
 Check: `docs/sessions/raw/<your host>/` holds this session's transcript; CI shows `gates` green on the pull request. A bootstrap that ends without this proof is not done.
 
-## 10. Optional, token side (say which you did in the session log)
+## 10. Optional extras (say which you did in the session log)
 
 - `caveman-compress` on `NEXT-STEPS.md` and memory pages only, never on `AGENTS.md`; run the lint after.
 - The caveman proxy, per machine, for input-side compression of logs, JSON and diffs: `npm install -g @caveman-ai/cli`, `caveman setup --install`, `caveman start`. Its own numbers: 33.2% fewer input tokens over 54 runs; the voice alone about 3% of output.
 - A Claude Code `SessionStart` hook that prints `cat docs/memory/MEMORY.md NEXT-STEPS.md` is a convenience; the gates above are the guarantee.
+- A code knowledge graph (graphify), only for an inherited or large codebase, recurring multi-hop impact questions, or a corpus of papers or media; below that, grep is as good and cheaper. CLI only: `uv tool install graphifyy==0.9.94` (two y's), add `graphify-out/` to `.gitignore`, set `GRAPHIFY_BACKEND=none` (code only, nothing leaves the machine) and `GRAPHIFY_QUERY_LOG_DISABLE=1`, build with `graphify extract . --code-only`, refresh after a pull with `graphify update .`, ask with `graphify query "<question>"`. Never run `graphify install`, `graphify claude install`, `graphify hook install` or `--project`: they add vendor hooks to `.claude/settings.json`, scripts to the tracked `.githooks/`, always-on text to `AGENTS.md` and `~/.claude/CLAUDE.md`, and a section to `CLAUDE.md`, which fails `adapter-thin`; the kit keeps all of that out. This recipe is read from graphify's docs and source at 0.9.94 and has not been run here.
 
 ## Fresh clone of a bootstrapped repository
 
