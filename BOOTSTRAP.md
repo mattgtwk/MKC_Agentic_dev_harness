@@ -160,7 +160,7 @@ Run the loop once on a trivial change, exactly as a real session would:
 2. `harness-plan feature <something small>`; approve.
 3. Make the change.
 4. `harness-close` (it runs the tests, `--ratchet`, and `save_transcript.py`).
-5. Commit with the body `Surface: <files>`, `Tests: <command> -> <summary line>`, `Review: clean after 1 round`.
+5. Commit with the body `Surface: <files>`, `Tests: <command> -> <summary line>`, `Review: clean after 1 round`, `Security: <outcome, or declined by the person>`.
 6. Push on the person's go. After CI is green with a coverage report: `python scripts/harness_lint.py --ratchet --update-baseline` sets the line and branch floors; commit `coverage_baseline.json`.
 
 `main` is protected, so push a branch and open a pull request (`gh pr create`); merge when `gates` is green.

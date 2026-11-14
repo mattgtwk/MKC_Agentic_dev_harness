@@ -36,7 +36,7 @@ A check that could not run reports WARN, never PASS.
 | ponytail | what gets built: the laziest solution that works | the second planning stance; a rule in Part A section 4 |
 | caveman | how it is said and how much is read | voice on by default (rule in Part A section 5); `caveman-compress` for prose files; the proxy is optional per machine |
 
-None is forked. Each is installed by `npx skills add` into `.agents/skills/` and pinned in `skills-lock.json`. Two opt-in skills come from the kit itself and install the same way (step 4 of the kit's `BOOTSTRAP.md`): `interfaces-design-bible` for a project with a user interface, `open-executive` for one that ships client deliverables.
+None is forked. Each is installed by `npx skills add` into `.agents/skills/` and pinned in `skills-lock.json`. Two opt-in skills come from the kit itself and install the same way (step 4 of the kit's `BOOTSTRAP.md`): `interfaces-design-bible` for a project with a user interface, `open-executive` for one that ships client deliverables. A third, `adversarial-security`, is offered by `harness-close` step 1 and runs when the person asks.
 
 ## Token budget
 
@@ -63,7 +63,7 @@ Proven by run in bootstrap where the tool is installed; by citation otherwise.
 
 ## Deliberately not built (upgrade paths)
 
-Constitution vendoring with a hash header across repos; TestDoc metadata and a test catalog; test-run receipts; an evidence ledger linking regression tests to historical bugs; a cross-repo impact tool; telemetry; reviewer, security and mutation-prover subagents; a persona review panel for documents; an append-only action log for outward writes; two-layer dated memory; BMAD Builder custom agents; the caveman proxy and cavecrew presets; Claude hook adapters; a pattern-card catalog (`docs/PATTERNS.md`, create it at the first card). Each has a known source in the MKC repositories. One more has an outside source: a code knowledge graph (graphify, or a code-graph MCP), for an inherited or large codebase, recurring multi-hop impact questions, or a corpus of papers or media; step 10 of the kit's `BOOTSTRAP.md` has the safe recipe, and below that size grep wins. Add one when a measured need appears, not before.
+Constitution vendoring with a hash header across repos; TestDoc metadata and a test catalog; test-run receipts; an evidence ledger linking regression tests to historical bugs; a cross-repo impact tool; telemetry; reviewer and mutation-prover subagents (security has the opt-in `adversarial-security` skill); a persona review panel for documents; an append-only action log for outward writes; two-layer dated memory; BMAD Builder custom agents; the caveman proxy and cavecrew presets; Claude hook adapters; a pattern-card catalog (`docs/PATTERNS.md`, create it at the first card). Each has a known source in the MKC repositories. One more has an outside source: a code knowledge graph (graphify, or a code-graph MCP), for an inherited or large codebase, recurring multi-hop impact questions, or a corpus of papers or media; step 10 of the kit's `BOOTSTRAP.md` has the safe recipe, and below that size grep wins. Add one when a measured need appears, not before.
 
 ## Upgrading a bootstrapped project
 

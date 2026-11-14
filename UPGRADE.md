@@ -13,6 +13,12 @@ You are an agent in a repository that was bootstrapped from this kit (github.com
 7. Run each entry's Check, then `python scripts/harness_lint.py --doctor --relink` and `python scripts/harness_lint.py` (0 errors).
 8. In the session log, list each entry as applied or skipped, with the reason. Branch, commit and push as for any change; it is a tooling change if a script was re-copied.
 
+## v1.4.0 (2026-11-14)
+
+- **Rule.** `harness-close` step 1 asks the person whether to run an optional adversarial security check; the outcome, or the decline, goes in the commit body as `Security:`. Enforced by convention. Part A section 8 changes, which step 4 carries in. Re-copy `.agents/skills/harness-close/SKILL.md` and `docs/HARNESS.md`.
+- **Optional, skip at upgrade.** The check itself: `npx skills add mattgtwk/MKC_Agentic_dev_harness -a codex -s adversarial-security -y`. Close offers to install it the first time the person says yes.
+- Check: step 1 of the harness-close skill mentions `adversarial-security`.
+
 ## v1.3.0 (2026-10-24)
 
 - **Rule.** A project's own Part A change bumps the version line with a `-local.N` suffix (`v1.3.0-local.1`), so this file can tell it from a kit version. Enforced by convention; `agents-present` accepts the suffix. Part A section 11 changes, which step 4 carries in.
