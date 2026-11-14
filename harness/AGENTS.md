@@ -1,6 +1,6 @@
 # AGENTS.md
 
-harness-constitution v1.3.0 (kit: github.com/mattgtwk/MKC_Agentic_dev_harness). Every coding agent and every person working in this repository follows this file. Part A is the constitution and is project-agnostic; Part B is this repository. Part B may add detail and may not contradict Part A. `CLAUDE.md` and `GEMINI.md` only import this file.
+harness-constitution v1.4.0 (kit: github.com/mattgtwk/MKC_Agentic_dev_harness). Every coding agent and every person working in this repository follows this file. Part A is the constitution and is project-agnostic; Part B is this repository. Part B may add detail and may not contradict Part A. `CLAUDE.md` and `GEMINI.md` only import this file.
 
 A rule enters Part A only if it names (a) the value it adds, (b) how it is enforced, and (c) what it displaces. A rule that cannot name an enforcement says "Enforced by: convention" and means it. This file stays under 24 KB (`agents-size`); the always-loaded set (this file, the two adapters, `docs/memory/MEMORY.md`) stays under 32 KB (`context-budget`).
 
@@ -84,7 +84,7 @@ A rule enters Part A only if it names (a) the value it adds, (b) how it is enfor
 
 ### 8. Close routine and the conversation record
 
-- **A session ends only when** the self-review gate is written out; tests ran after the last edit, their output is recorded and the coverage ratchet was run over the report; `docs/ARCHITECTURE.md` matches reality; `NEXT-STEPS.md` is rewritten for the next session; decisions are in ADRs; lessons are promoted; memory pages pass and the index is rebuilt; the session log is written; transcripts are copied; the lint is clean; the plan has its Status header; the commit carries `Surface:`, `Tests:` and `Review:`. Enforced by: `harness-close`; `--prepush`.
+- **A session ends only when** the self-review gate is written out; tests ran after the last edit, their output is recorded and the coverage ratchet was run over the report; `docs/ARCHITECTURE.md` matches reality; `NEXT-STEPS.md` is rewritten for the next session; decisions are in ADRs; lessons are promoted; memory pages pass and the index is rebuilt; the session log is written; transcripts are copied; the lint is clean; the plan has its Status header; the commit carries `Surface:`, `Tests:`, `Review:` and `Security:` (the optional security check's outcome, or its decline). Enforced by: `harness-close`; `--prepush` (`Security:` by convention).
 - **The conversation record lives in this repository.** Every session leaves `docs/sessions/session_<YYMMDDhhmm>.md` and, where the host exposes it, its raw transcript under `docs/sessions/raw/<host>/` via `python scripts/save_transcript.py`. Nothing of record lives only in a vendor's home folder (Claude, Codex, Gemini, Antigravity). Enforced by: `session-log` at push; `harness-close` step 9.
 
 ### 9. Access boundaries
